@@ -16,6 +16,11 @@ func InitializeRoutes(r *gin.Engine) {
 	api.PUT("/notes/:id", IsAuthenticated, handlers.UpdateNote)
 	api.DELETE("/notes/:id", IsAuthenticated, handlers.DeleteNote)
 
+	api.GET("/folders", IsAuthenticated, handlers.GetFolders)
+	api.POST("/folders", IsAuthenticated, handlers.CreateFolder)
+	api.PUT("/folders/:id", IsAuthenticated, handlers.UpdateFolder)
+	api.DELETE("/folders/:id", IsAuthenticated, handlers.DeleteFolder)
+
 	api.GET("/tasks", IsAuthenticated, handlers.GetTasks)
 	api.POST("/tasks", IsAuthenticated, handlers.CreateTask)
 	api.PUT("/tasks/:id", IsAuthenticated, handlers.UpdateTask)

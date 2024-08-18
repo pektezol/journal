@@ -27,7 +27,7 @@ func GetNotes(c *gin.Context) {
 
 func fetchFolders(db *sql.DB, userID int, parentID *int) ([]models.FolderNote, error) {
 	rows, err := db.Query(`
-    SELECT f.id FROM folders f WHERE f.parent is $1 AND f.owner is $2;
+    SELECT f.id, f.name, f.parent FROM folders f WHERE f.parent is $1 AND f.owner is $2;
     `, parentID, userID)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,9 @@ func fetchFolders(db *sql.DB, userID int, parentID *int) ([]models.FolderNote, e
 	folders := []models.FolderNote{}
 	for rows.Next() {
 		var folderID int
-		err := rows.Scan(&folderID)
+		var folderName string
+		var folderParent *int
+		err := rows.Scan(&folderID, &folderName, &folderParent)
 		if err != nil {
 			return nil, err
 		}
@@ -54,6 +56,8 @@ func fetchFolders(db *sql.DB, userID int, parentID *int) ([]models.FolderNote, e
 
 		folders = append(folders, models.FolderNote{
 			ID:         folderID,
+			Name:       folderName,
+			Parent:     folderParent,
 			Notes:      notes,
 			Subfolders: subfolders,
 		})
@@ -63,7 +67,7 @@ func fetchFolders(db *sql.DB, userID int, parentID *int) ([]models.FolderNote, e
 
 func fetchNotes(db *sql.DB, userID int, folderID int) ([]models.Note, error) {
 	rows, err := db.Query(`
-    SELECT n.id, n.note FROM notes n WHERE n.folder is $1 AND n.owner is $2;
+    SELECT n.id, n.title, n.note, n.folder, n.created_at, n.updated_at FROM notes n WHERE n.folder is $1 AND n.owner is $2;
     `, folderID, userID)
 	if err != nil {
 		return nil, err
@@ -73,7 +77,7 @@ func fetchNotes(db *sql.DB, userID int, folderID int) ([]models.Note, error) {
 	notes := []models.Note{}
 	for rows.Next() {
 		var note models.Note
-		err := rows.Scan(&note.ID, &note.Note)
+		err := rows.Scan(&note.ID, &note.Title, &note.Note, &note.Folder, &note.CreatedAt, &note.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +90,7 @@ func CreateNote(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	type CreateNoteRequest struct {
 		Folder int    `json:"folder" binding:"required"`
-		Note   string `json:"note" binding:"required"`
+		Title  string `json:"title" binding:"required"`
 	}
 	var req CreateNoteRequest
 	err := c.BindJSON(&req)
@@ -96,8 +100,9 @@ func CreateNote(c *gin.Context) {
 	}
 	note := models.Note{
 		Owner:  userID.(int),
+		Title:  req.Title,
 		Folder: req.Folder,
-		Note:   req.Note,
+		Note:   "",
 	}
 	result := database.DB.Create(&note)
 	if result.Error != nil {
@@ -117,7 +122,8 @@ func UpdateNote(c *gin.Context) {
 	}
 	type UpdateNoteRequest struct {
 		Folder int    `json:"folder" binding:"required"`
-		Note   string `json:"note" binding:"required"`
+		Title  string `json:"title" binding:"required"`
+		Note   string `json:"note"`
 	}
 	var req UpdateNoteRequest
 	err = c.BindJSON(&req)
@@ -126,16 +132,15 @@ func UpdateNote(c *gin.Context) {
 		return
 	}
 	note := models.Note{
-		ID:     noteID,
-		Owner:  userID.(int),
-		Folder: req.Folder,
-		Note:   req.Note,
+		ID:    noteID,
+		Owner: userID.(int),
 	}
 	result := database.DB.First(&note)
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": result.Error.Error()})
 		return
 	}
+	note.Title = req.Title
 	note.Folder = req.Folder
 	note.Note = req.Note
 	result = database.DB.Save(&note)

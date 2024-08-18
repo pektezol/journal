@@ -19,20 +19,28 @@ type Task struct {
 }
 
 type Folder struct {
-	ID     int  `json:"id"`
-	Owner  int  `json:"-"`
-	Parent *int `json:"parent"`
+	ID        int       `json:"id"`
+	Owner     int       `json:"-"`
+	Name      string    `json:"name"`
+	Parent    *int      `json:"parent"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Note struct {
-	ID     int    `json:"id"`
-	Owner  int    `json:"-"`
-	Folder int    `json:"folder,omitempty"`
-	Note   string `json:"note"`
+	ID        int       `json:"id"`
+	Owner     int       `json:"-"`
+	Folder    int       `json:"folder"`
+	Title     string    `json:"title"`
+	Note      string    `json:"note"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type FolderNote struct {
 	ID         int          `json:"id"`
+	Name       string       `json:"name"`
+	Parent     *int         `json:"parent"`
 	Notes      []Note       `json:"notes"`
 	Subfolders []FolderNote `json:"subfolders"`
 }

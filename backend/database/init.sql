@@ -19,10 +19,11 @@ CREATE TABLE "tasks" (
 CREATE TABLE "folders" (
     id INTEGER PRIMARY KEY,
     owner INT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     parent INT,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (parent) REFERENCES "folders"(id),
+    FOREIGN KEY (parent) REFERENCES "folders"(id) ON DELETE CASCADE,
     FOREIGN KEY (owner) REFERENCES "users"(id)
 );
 
@@ -30,9 +31,10 @@ CREATE TABLE "notes" (
     id INTEGER PRIMARY KEY,
     owner INT NOT NULL,
     folder INT NOT NULL,
+    title TEXT NOT NULL UNIQUE,
     note TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (folder) REFERENCES "folders"(id),
+    FOREIGN KEY (folder) REFERENCES "folders"(id) ON DELETE CASCADE,
     FOREIGN KEY (owner) REFERENCES "users"(id)
 );
