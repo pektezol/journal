@@ -9,9 +9,10 @@ interface UpdateNoteProps {
     folders: Folder[];
     open: boolean;
     onClose: () => void;
+    onUpdate: (updatedNote: Note) => void;
 }
 
-const UpdateNote: React.FC<UpdateNoteProps> = ({ currentNote, folders, open, onClose }) => {
+const UpdateNote: React.FC<UpdateNoteProps> = ({ currentNote, folders, open, onClose, onUpdate }) => {
     const [newNoteTitle, setNewNoteTitle] = useState<string>(currentNote.title);
     const [newNoteFolderID, setNewNoteFolderID] = useState<number>(currentNote.folder);
 
@@ -59,13 +60,15 @@ const UpdateNote: React.FC<UpdateNoteProps> = ({ currentNote, folders, open, onC
                     } else if (newNoteFolderID == null) {
                         alert("Select a folder for the updated note.");
                     } else {
-                        api_update_note({
+                        const updatedNote: Note = {
                             ...currentNote,
                             title: newNoteTitle,
                             folder: newNoteFolderID,
-                        });
+                        }
+                        api_update_note(updatedNote);
                         alert("Note updated successfully!");
                         onClose();
+                        onUpdate(updatedNote);
                     }
                 }} color="primary">
                     Submit

@@ -21,7 +21,7 @@ import { api_delete_folder, api_delete_note } from "../api/api";
 
 interface FolderListProps {
   folder: FolderNote;
-  onNoteSelect: (note: Note) => void;
+  onNoteSelect: (note?: Note) => void;
   onRefresh: () => void;
   onEditFolder: (folder: FolderNote) => void;
   onEditNote: (note: Note) => void;
@@ -107,7 +107,10 @@ const FolderList: React.FC<FolderListProps> = ({ folder, onNoteSelect, onRefresh
               onMouseLeave={(e) =>
                 (e.currentTarget.style.backgroundColor = "inherit")
               }
-              onClick={() => onNoteSelect(note)}
+              onClick={() => {
+                onNoteSelect(note);
+                onRefresh();
+              }}
             >
               <ListItemIcon>
                 <NoteIcon />
@@ -131,6 +134,7 @@ const FolderList: React.FC<FolderListProps> = ({ folder, onNoteSelect, onRefresh
                     if (window.confirm("Are you sure you want to delete this note? This action is permanent.")) {
                       api_delete_note(note.id);
                       alert("Note deleted successfully!");
+                      onNoteSelect(undefined);
                       onRefresh();
                     }
                   }}

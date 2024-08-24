@@ -97,8 +97,11 @@ const Journal: React.FC = () => {
                             open={updateNoteDialog}
                             onClose={() => {
                                 setUpdateNoteDialog(false);
+                            }}
+                            onUpdate={(updatedNote) => {
                                 _fetch_notes();
                                 _fetch_folders();
+                                setSelectedNote(updatedNote);
                             }}
                         />
                     )}
@@ -150,7 +153,9 @@ const Journal: React.FC = () => {
                                 <FolderList
                                     key={folder.id}
                                     folder={folder}
-                                    onNoteSelect={setSelectedNote}
+                                    onNoteSelect={(note) => {
+                                        setSelectedNote(note)
+                                    }}
                                     onRefresh={() => {
                                         _fetch_notes();
                                         _fetch_folders();
@@ -173,10 +178,15 @@ const Journal: React.FC = () => {
                 height: "95vh",
                 overflowY: "scroll",
             }}>
-                <h1>{selectedNote?.title}</h1>
-                <NoteView
-                    selectedNote={selectedNote}
-                />
+                {
+                    selectedNote &&
+                    <>
+                        <h1>{selectedNote?.title}</h1>
+                        <NoteView
+                            selectedNote={selectedNote} />
+                    </>
+                }
+
             </Grid>
         </Grid>
     );
