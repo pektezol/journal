@@ -9,7 +9,7 @@ const LoginForm: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const handleLogin = async (event: React.FormEvent) => {
+  const handleLogin = async () => {
     try {
       const token = await api_login(username, password);
       localStorage.setItem("token", token);
@@ -30,6 +30,11 @@ const LoginForm: React.FC = () => {
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key == "Enter") {
+              handleLogin();
+            }
+          }}
           required
         />
       </Grid>
@@ -40,6 +45,11 @@ const LoginForm: React.FC = () => {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key == "Enter") {
+              handleLogin();
+            }
+          }}
           required
         />
       </Grid>

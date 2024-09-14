@@ -9,7 +9,8 @@ interface NoteViewProps {
 
 
 const NoteView: React.FC<NoteViewProps> = ({ selectedNote }) => {
-    const [currentNote, setCurrentNote] = useState<Note>();
+    const [currentNote, setCurrentNote] = useState<Note | undefined>(undefined);
+    const [debouncedNote, setDebouncedNote] = useState<Note | undefined>(undefined);
     const isInitialLoad = useRef(true); // Ref to track initial load
 
 
@@ -21,12 +22,24 @@ const NoteView: React.FC<NoteViewProps> = ({ selectedNote }) => {
     }, [selectedNote]);
 
     useEffect(() => {
-        if (!isInitialLoad.current && currentNote) {
-            api_update_note(currentNote);
+        const handler = setTimeout(() => {
+            if (currentNote) {
+                setDebouncedNote(currentNote);
+            }
+        }, 500);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [currentNote]);
+
+    useEffect(() => {
+        if (!isInitialLoad.current && debouncedNote) {
+            api_update_note(debouncedNote);
         } else {
             isInitialLoad.current = false;
         }
-    }, [currentNote]);
+    }, [debouncedNote]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         if (currentNote) {
