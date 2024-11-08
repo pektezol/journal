@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pektezol/journal/backend/database"
 	"github.com/pektezol/journal/backend/models"
+	"github.com/pektezol/journal/backend/utils"
 )
 
 func GetNotes(c *gin.Context) {
@@ -81,6 +82,14 @@ func fetchNotes(db *sql.DB, userID int, folderID int) ([]models.Note, error) {
 		if err != nil {
 			return nil, err
 		}
+		note.Note, err = utils.Decrypt(note.Note)
+		if err != nil {
+			return nil, err
+		}
+		note.Title, err = utils.Decrypt(note.Title)
+		if err != nil {
+			return nil, err
+		}
 		notes = append(notes, note)
 	}
 	return notes, nil
@@ -140,9 +149,17 @@ func UpdateNote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": result.Error.Error()})
 		return
 	}
-	note.Title = req.Title
+	note.Title, err = utils.Encrypt(req.Title)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	note.Folder = req.Folder
-	note.Note = req.Note
+	note.Note, err = utils.Encrypt(req.Note)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	result = database.DB.Save(&note)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
