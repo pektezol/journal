@@ -79,5 +79,6 @@ func _encryptall() {
 		if err != nil {
 			panic(err)
 		}
+		database.DB.Save(&notes[i])
 	}
 }
