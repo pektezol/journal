@@ -82,9 +82,11 @@ func fetchNotes(db *sql.DB, userID int, folderID int) ([]models.Note, error) {
 		if err != nil {
 			return nil, err
 		}
-		note.Note, err = utils.Decrypt(note.Note)
-		if err != nil {
-			return nil, err
+		if note.Note != "" {
+			note.Note, err = utils.Decrypt(note.Note)
+			if err != nil {
+				return nil, err
+			}
 		}
 		note.Title, err = utils.Decrypt(note.Title)
 		if err != nil {
@@ -112,6 +114,11 @@ func CreateNote(c *gin.Context) {
 		Title:  req.Title,
 		Folder: req.Folder,
 		Note:   "",
+	}
+	note.Title, err = utils.Encrypt(req.Title)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	result := database.DB.Create(&note)
 	if result.Error != nil {
