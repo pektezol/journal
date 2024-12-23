@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-import { api_get_folders, api_get_notes } from "../api/api";
-import { Folder, FolderNote, Note } from "../api/types";
-import { Button, Card, Grid } from "@mui/material";
+import { api_get_folders, api_get_notes, api_get_tasks, api_update_note, api_update_task } from "../api/api";
+import { Folder, FolderNote, Note, Task } from "../api/types";
+import { Button, Card, Dialog, DialogContent, DialogTitle, Grid } from "@mui/material";
 import FolderList from "../components/FolderList";
 import NoteView from "../components/NoteView";
 import CreateFolder from "../components/forms/CreateFolder";
@@ -10,27 +10,36 @@ import CreateNote from "../components/forms/CreateNote";
 import UpdateFolder from "../components/forms/UpdateFolder";
 import UpdateNote from "../components/forms/UpdateNote";
 import { useNavigate } from "react-router-dom";
+import TaskList from "../components/TasksList";
+import CreateTask from "../components/forms/CreateTask";
+import UpdateTask from "../components/forms/UpdateTask";
 
 
 const Journal: React.FC = () => {
     const [folders, setFolders] = useState<Folder[]>([]);
     const [folderNotes, setFolderNotes] = useState<FolderNote[]>([]);
     const [selectedNote, setSelectedNote] = useState<Note>();
+    const [tasks, setTasks] = useState<Task[] | undefined>(undefined);
+    const [selectedTask, setSelectedTask] = useState<Task>();
+    const [viewSelectedTask, setViewSelectedTask] = useState<boolean>(false);
 
     const [createFolderDialog, setCreateFolderDialog] = useState(false);
     const [createNoteDialog, setCreateNoteDialog] = useState(false);
+    const [createTaskDialog, setCreateTaskDialog] = useState(false);
 
     const [updateFolderDialog, setUpdateFolderDialog] = useState<boolean>(false);
     const [updateFolder, setUpdateFolder] = useState<FolderNote>();
     const [updateNoteDialog, setUpdateNoteDialog] = useState<boolean>(false);
     const [updateNote, setUpdateNote] = useState<Note>();
+    const [updateTaskDialog, setUpdateTaskDialog] = useState<boolean>(false);
+    const [updateTask, setUpdateTask] = useState<Task>();
 
     const navigate = useNavigate();
 
     useEffect(() => {
         _fetch_notes();
         _fetch_folders();
-        // eslint-disable-next-line 
+        _fetch_tasks();
     }, []);
 
     const _fetch_folders = async () => {
@@ -53,14 +62,24 @@ const Journal: React.FC = () => {
         }
     };
 
-    useEffect(() => { }, [updateFolderDialog, updateFolder]);
-    useEffect(() => { }, [updateNoteDialog, updateNote]);
+    const _fetch_tasks = async () => {
+        try {
+            const data = await api_get_tasks();
+            setTasks(data);
+        } catch (error) {
+            console.error("error fetching tasks:", error);
+            navigate("/login");
+        }
+    };
+
+    // useEffect(() => { }, [updateFolderDialog, updateFolder]);
+    // useEffect(() => { }, [updateNoteDialog, updateNote]);
 
     return (
         <Grid container spacing={1}>
             <Grid item xs={3}>
                 <Grid container spacing={1}>
-                    <Grid item xs={12}>
+                    <Grid item xs={4}>
                         <Button
                             variant="contained"
                             onClick={() => {
@@ -71,8 +90,44 @@ const Journal: React.FC = () => {
                             Logout
                         </Button>
                     </Grid>
+                    <Grid item xs={2} />
+                    <Grid item xs={6}>
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                setCreateTaskDialog(true);
+                            }}
+                            fullWidth>
+                            New Task
+                        </Button>
+                        <CreateTask
+                            open={createTaskDialog}
+                            onClose={() => {
+                                setCreateTaskDialog(false);
+                                _fetch_tasks();
+                            }}
+                        />
+                    </Grid>
                     <Grid item xs={12}>
-
+                        <Card
+                            variant="outlined"
+                            sx={{
+                                overflowY: "auto",
+                            }} >
+                            <TaskList
+                                tasks={tasks}
+                                onRefresh={() => {
+                                    _fetch_tasks();
+                                }}
+                                onViewTask={(task) => {
+                                    setSelectedTask(task);
+                                    setViewSelectedTask(true);
+                                }}
+                                onEditTask={(task) => {
+                                    setUpdateTask(task);
+                                    setUpdateTaskDialog(true);
+                                }} />
+                        </Card>
                     </Grid>
                 </Grid>
             </Grid>
@@ -104,6 +159,30 @@ const Journal: React.FC = () => {
                                 setSelectedNote(updatedNote);
                             }}
                         />
+                    )}
+                    {updateTaskDialog && updateTask && (
+                        <UpdateTask
+                            currentTask={updateTask}
+                            open={updateTaskDialog}
+                            onClose={() => {
+                                setUpdateTaskDialog(false);
+                            }}
+                            onUpdate={() => {
+                                _fetch_tasks();
+                            }}
+                        />
+                    )}
+                    {viewSelectedTask && selectedTask && (
+                        <Dialog 
+                            open={viewSelectedTask}
+                            onClose={() => {
+                                setViewSelectedTask(false);
+                            }}>
+                            <DialogTitle>{selectedTask.title}</DialogTitle>
+                            <DialogContent dividers>
+                            {selectedTask.description}
+                            </DialogContent>
+                        </Dialog>
                     )}
                     <Grid item xs={6}>
                         <Button

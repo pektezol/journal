@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Folder, FolderNote, Note } from "./types";
+import { Folder, FolderNote, Note, Task } from "./types";
 
 export const api_login = async (username: string, password: string): Promise<string> => {
     const response = await axios.post("/api/login", {
@@ -30,6 +30,21 @@ export const api_get_notes = async (): Promise<FolderNote[]> => {
         }
     });
     return _map_data_to_folders(response.data.folders);
+}
+
+export const api_get_tasks = async (): Promise<Task[]> => {
+    const token = localStorage.getItem("token")
+    const response = await axios.get("/api/tasks", {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+    return response.data.tasks.map((item: { id: any; title: any; description: any; finished: any; }) => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        finished: item.finished,
+    }));
 }
 
 function _map_data_to_folders(data: any[]): FolderNote[] {
@@ -67,6 +82,31 @@ export const api_update_note = async (note: Note) => {
         "folder": note.folder,
         "title": note.title,
         "note": note.note,
+    }, {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+};
+
+export const api_create_task = async (task_title: string, task_description: string) => {
+    const token = localStorage.getItem("token")
+    await axios.post(`/api/tasks`, {
+        "title": task_title,
+        "description": task_description,
+    }, {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+};
+
+export const api_update_task = async (task: Task) => {
+    const token = localStorage.getItem("token")
+    await axios.put(`/api/tasks/${task.id}`, {
+        "title": task.title,
+        "description": task.description,
+        "finished": task.finished,
     }, {
         headers: {
             "Authorization": `Bearer ${token}`
@@ -117,3 +157,11 @@ export const api_delete_note = async (note_id: number) => {
     });
 };
 
+export const api_delete_task = async (task_id: number) => {
+    const token = localStorage.getItem("token")
+    await axios.delete(`/api/tasks/${task_id}`, {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+};

@@ -11,6 +11,13 @@ export interface Folder {
     name: string;
 };
 
+export interface Task {
+    id: number;
+    title: string;
+    description: string;
+    finished: boolean;
+};
+
 export interface Note {
     id: number;
     folder: number;
