@@ -13,7 +13,7 @@ import (
 func GetTasks(c *gin.Context) {
 	userID, _ := c.Get("user_id")
 	tasks := []models.Task{}
-	result := database.DB.Where("owner = ?", userID).Find(&tasks)
+	result := database.DB.Where("owner = ?", userID).Find(&tasks).Order("updated_at DESC")
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": result.Error.Error()})
 		return
@@ -40,6 +40,7 @@ func CreateTask(c *gin.Context) {
 		Finished:    false,
 		Position:    0,
 		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
 	}
 	result := database.DB.Create(&task)
 	if result.Error != nil {
@@ -60,6 +61,7 @@ func UpdateTask(c *gin.Context) {
 	type UpdateTaskRequest struct {
 		Title       string `json:"title" binding:"required"`
 		Description string `json:"description" binding:"required"`
+		Finished    *bool  `json:"finished" binding:"required"`
 	}
 	var req UpdateTaskRequest
 	err = c.BindJSON(&req)
@@ -78,6 +80,7 @@ func UpdateTask(c *gin.Context) {
 	}
 	task.Title = req.Title
 	task.Description = req.Description
+	task.Finished = *req.Finished
 	result = database.DB.Save(&task)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
