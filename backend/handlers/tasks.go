@@ -60,7 +60,7 @@ func UpdateTask(c *gin.Context) {
 	}
 	type UpdateTaskRequest struct {
 		Title       string `json:"title" binding:"required"`
-		Description string `json:"description" binding:"required"`
+		Description string `json:"description"`
 		Finished    *bool  `json:"finished" binding:"required"`
 	}
 	var req UpdateTaskRequest
