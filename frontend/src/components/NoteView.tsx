@@ -60,6 +60,7 @@ const NoteView: React.FC<NoteViewProps> = ({ selectedNote }) => {
                     fullWidth
                     multiline
                     onChange={handleInputChange}
+                    spellCheck="false"
                 // minRows={20}
                 />
             )
