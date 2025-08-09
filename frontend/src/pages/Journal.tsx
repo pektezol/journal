@@ -77,7 +77,7 @@ const Journal: React.FC = () => {
 
     return (
         <Grid container spacing={1}>
-            <Grid item xs={3}>
+            <Grid item xs={12} sm={3}>
                 <Grid container spacing={1}>
                     <Grid item xs={4}>
                         <Button
@@ -131,7 +131,7 @@ const Journal: React.FC = () => {
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={12} sm={3}>
                 <Grid container spacing={1}>
                     {updateFolderDialog && updateFolder && (
                         <UpdateFolder
@@ -253,7 +253,7 @@ const Journal: React.FC = () => {
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid item xs={6} sx={{
+            <Grid item xs={12} sm={6} sx={{
                 height: "95vh",
                 overflowY: "scroll",
             }}>
